@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Car Problem Checker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0f13;
+      --panel: #16181f;
+      --border: #2a2d38;
+      --accent: #e8432d;
+      --accent2: #f5a623;
+      --text: #e8e9ef;
+      --muted: #676b7e;
+      --success: #2de88e;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 60px;
+      background-image:
+        radial-gradient(ellipse 80% 40% at 50% -10%, rgba(232,67,45,0.12) 0%, transparent 70%),
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.02) 40px);
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(232,67,45,0.15);
+      border: 1px solid rgba(232,67,45,0.4);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 10vw, 88px);
+      letter-spacing: 3px;
+      line-height: 1;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p {
+      color: var(--muted);
+      margin-top: 10px;
+      font-size: 15px;
+      font-weight: 300;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      width: 100%;
+      max-width: 620px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+
+    /* ── Label & Select ── */
+    label.field-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    select, .radio-group {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    select {
+      appearance: none;
+      background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23676b7e' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 16px center;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      padding: 13px 44px 13px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+    select option { background: #1a1c24; }
+
+    /* ── Radio buttons ── */
+    .radio-group {
+      display: flex;
+      gap: 10px;
+    }
+    .radio-group label {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: border-color .2s, background .2s;
+      user-select: none;
+    }
+    .radio-group input[type=radio] { display: none; }
+    .radio-group input[type=radio]:checked + span { color: var(--text); }
+    .radio-group label:has(input:checked) {
+      border-color: var(--accent);
+      background: rgba(232,67,45,0.1);
+    }
+    .radio-group label span { pointer-events: none; }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 8px 0 24px;
+    }
+
+    /* ── Question section ── */
+    #questions { display: none; }
+    #questions.visible { display: block; animation: fadeIn .35s ease; }
+
+    /* ── Diagnose Button ── */
+    button#diagnose {
+      width: 100%;
+      padding: 15px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: opacity .2s, transform .1s;
+    }
+    button#diagnose:hover { opacity: .88; }
+    button#diagnose:active { transform: scale(.98); }
+
+    /* ── Result box ── */
+    #result {
+      display: none;
+      margin-top: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      animation: slideUp .4s ease;
+    }
+    #result.visible { display: block; }
+
+    .result-header {
+      padding: 14px 20px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .result-header.critical { background: rgba(232,67,45,0.2); color: var(--accent); border-bottom: 1px solid rgba(232,67,45,0.3); }
+    .result-header.warning  { background: rgba(245,166,35,0.15); color: var(--accent2); border-bottom: 1px solid rgba(245,166,35,0.3); }
+
+    .result-body { padding: 20px; background: rgba(0,0,0,0.25); }
+
+    .result-row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 6px 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-row .rk {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-top: 2px;
+    }
+    .result-row .rv { color: var(--text); }
+
+    .cost-pill {
+      display: inline-block;
+      background: rgba(46,232,142,0.12);
+      border: 1px solid rgba(46,232,142,0.3);
+      color: var(--success);
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* ── Reset ── */
+    button#reset {
+      display: none;
+      width: 100%;
+      margin-top: 14px;
+      padding: 12px;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: color .2s, border-color .2s;
+    }
+    button#reset:hover { color: var(--text); border-color: var(--muted); }
+    button#reset.visible { display: block; }
+
+    /* ── Animations ── */
+    @keyframes fadeIn  { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+    /* ── Footer ── */
+    footer { margin-top: 40px; font-size: 12px; color: var(--muted); text-align: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">🔧 Diagnostic Tool</div>
+  <h1>Car Problem<br>Checker</h1>
+  <p>Answer a few questions — get an instant diagnosis.</p>
+</header>
+
+<div class="card">
+
+  <!-- Step 1: Main problem -->
+  <label class="field-label" for="mainProblem">Select your main problem</label>
+  <select id="mainProblem" onchange="showQuestions()">
+    <option value="">— Choose a symptom —</option>
+    <option value="wontStart">Car won't start</option>
+    <option value="overheating">Engine overheating</option>
+    <option value="strangeNoise">Strange noise</option>
+    <option value="smoke">Smoke from exhaust</option>
+  </select>
+
+  <!-- Step 2: Dynamic questions -->
+  <div id="questions">
+    <hr class="divider"/>
+
+    <!-- Won't start -->
+    <div id="q-wontStart" class="q-section" style="display:none">
+      <label class="field-label">Is there a clicking sound when you turn the key?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="clicking" value="yes"><span>✅ Yes</span></label>
+        <label><input type="radio" name="clicking" value="no"><span>❌ No</span></label>
+      </div>
+      <label class="field-label">Are the dashboard lights on?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="lights" value="yes"><span>✅ Yes</span></label>
+        <label><input type="radio" name="lights" value="no"><span>❌ No</span></label>
+      </div>
+      <label class="field-label">Is there fuel in the tank?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="fuel" value="yes"><span>✅ Yes</span></label>
+        <label><input type="radio" name="fuel" value="no"><span>❌ No</span></label>
+      </div>
+    </div>
+
+    <!-- Overheating -->
+    <div id="q-overheating" class="q-section" style="display:none">
+      <label class="field-label">Is the coolant level low?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="coolant" value="yes"><span>✅ Yes</span></label>
+        <label><input type="radio" name="coolant" value="no"><span>❌ No</span></label>
+      </div>
+      <label class="field-label">Is there a leak under the car?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="leak" value="yes"><span>✅ Yes</span></label>
+        <label><input type="radio" name="leak" value="no"><span>❌ No</span></label>
+      </div>
+      <label class="field-label">Is the cooling fan running?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="fan" value="yes"><span>✅ Yes</span></label>
+        <label><input type="radio" name="fan" value="no"><span>❌ No</span></label>
+      </div>
+    </div>
+
+    <!-- Strange Noise -->
+    <div id="q-strangeNoise" class="q-section" style="display:none">
+      <label class="field-label">Where does the noise come from?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="noiseLocation" value="front"><span>🔊 Front</span></label>
+        <label><input type="radio" name="noiseLocation" value="rear"><span>🔊 Rear</span></label>
+        <label><input type="radio" name="noiseLocation" value="engine"><span>🔊 Engine</span></label>
+      </div>
+      <label class="field-label">What type of noise is it?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="noiseType" value="grinding"><span>⚙️ Grinding</span></label>
+        <label><input type="radio" name="noiseType" value="knocking"><span>🔨 Knocking</span></label>
+        <label><input type="radio" name="noiseType" value="squealing"><span>📢 Squealing</span></label>
+      </div>
+    </div>
+
+    <!-- Smoke -->
+    <div id="q-smoke" class="q-section" style="display:none">
+      <label class="field-label">What color is the smoke?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="smokeColor" value="white"><span>🌫️ White</span></label>
+        <label><input type="radio" name="smokeColor" value="blue"><span>💨 Blue</span></label>
+        <label><input type="radio" name="smokeColor" value="black"><span>🖤 Black</span></label>
+      </div>
+      <label class="field-label">Is there a burning smell?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="smell" value="yes"><span>✅ Yes</span></label>
+        <label><input type="radio" name="smell" value="no"><span>❌ No</span></label>
+      </div>
+    </div>
+
+    <button id="diagnose" onclick="diagnose()">⚡ Run Diagnosis</button>
+  </div>
+
+  <!-- Result -->
+  <div id="result"></div>
+  <button id="reset" onclick="reset()">↺ Start Over</button>
+
+</div>
+
+<footer>🚗 For reference only — always consult a certified mechanic.</footer>
+
+<script>
+  function showQuestions() {
+    const val = document.getElementById('mainProblem').value;
+    const qDiv = document.getElementById('questions');
+    document.querySelectorAll('.q-section').forEach(s => s.style.display = 'none');
+    document.getElementById('result').classList.remove('visible');
+    document.getElementById('reset').classList.remove('visible');
+    // Clear all radios
+    document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+
+    if (!val) { qDiv.classList.remove('visible'); return; }
+    qDiv.classList.add('visible');
+    const sec = document.getElementById('q-' + val);
+    if (sec) sec.style.display = 'block';
+  }
+
+  function get(name) {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : null;
+  }
+
+  function showResult(severity, title, icon, problem, causes, solution, cost) {
+    const res = document.getElementById('result');
+    res.innerHTML = `
+      <div class="result-header ${severity}">${icon} ${title.toUpperCase()}</div>
+      <div class="result-body">
+        <div class="result-row"><div class="rk">Diagnosis</div><div class="rv">${problem}</div></div>
+        <div class="result-row"><div class="rk">Possible Causes</div><div class="rv">${causes}</div></div>
+        <div class="result-row"><div class="rk">Solution</div><div class="rv">${solution}</div></div>
+        <div class="result-row"><div class="rk">Est. Repair Cost</div><div class="rv"><span class="cost-pill">${cost} DZD</span></div></div>
+      </div>`;
+    res.classList.add('visible');
+    document.getElementById('reset').classList.add('visible');
+    res.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function diagnose() {
+    const problem = document.getElementById('mainProblem').value;
+
+    if (problem === 'wontStart') {
+      const clicking = get('clicking'), lights = get('lights'), fuel = get('fuel');
+      if (!clicking || !lights || !fuel) return alert('Please answer all questions.');
+
+      if (clicking === 'yes' && lights === 'no')
+        return showResult('critical','Battery Dead','🔋','Dead or discharged battery',
+          'Corroded terminals, old battery, alternator not charging',
+          'Recharge the battery or replace it. Check alternator output.',
+          '3 500 – 12 000');
+
+      if (clicking === 'yes' && lights === 'yes')
+        return showResult('critical','Starter Motor Fault','⚡','Weak starter motor or solenoid',
+          'Worn brushes, failed solenoid, poor ground connection',
+          'Test the starter motor. Replace solenoid or full starter unit.',
+          '8 000 – 25 000');
+
+      if (clicking === 'no' && lights === 'yes' && fuel === 'yes')
+        return showResult('critical','Starter or Ignition Issue','🔑','No crank — starter relay or ignition switch',
+          'Faulty ignition switch, blown fuse, bad relay',
+          'Check fuse box, test relay, inspect ignition switch wiring.',
+          '5 000 – 18 000');
+
+      if (fuel === 'no')
+        return showResult('warning','Empty Tank','⛽','No fuel in the tank',
+          'Tank ran dry, faulty fuel gauge',
+          'Add at least 5 L of fuel. Check fuel gauge calibration.',
+          '500 – 3 000');
+
+      return showResult('warning','Unknown Start Fault','❓','Multiple possible causes',
+        'Immobiliser, ECU fault, fuel pump, spark plugs',
+        'Run an OBD-II scan. Inspect fuel pump pressure and spark plugs.',
+        '10 000 – 45 000');
+    }
+
+    if (problem === 'overheating') {
+      const coolant = get('coolant'), leak = get('leak'), fan = get('fan');
+      if (!coolant || !leak || !fan) return alert('Please answer all questions.');
+
+      if (coolant === 'yes' && leak === 'yes')
+        return showResult('critical','Coolant Leak','💧','Low coolant due to a leak in the system',
+          'Cracked hose, radiator hole, head gasket seep',
+          'Locate and fix the leak. Refill coolant. Pressure-test the system.',
+          '6 000 – 35 000');
+
+      if (coolant === 'yes' && leak === 'no')
+        return showResult('critical','Thermostat Failure','🌡️','Thermostat stuck closed',
+          'Old thermostat not opening to allow coolant flow',
+          'Replace the thermostat. Flush and refill the cooling system.',
+          '4 000 – 10 000');
+
+      if (fan === 'no')
+        return showResult('critical','Cooling Fan Fault','🌀','Electric cooling fan not operating',
+          'Blown fuse, bad fan motor, faulty temperature sensor',
+          'Check fan fuse, test motor directly. Replace fan or sensor.',
+          '5 000 – 20 000');
+
+      return showResult('warning','Radiator Blockage','♨️','Restricted coolant flow through radiator',
+        'Scale buildup, debris, partially blocked radiator',
+        'Flush the radiator. Consider a full cooling system service.',
+        '4 000 – 15 000');
+    }
+
+    if (problem === 'strangeNoise') {
+      const loc = get('noiseLocation'), type = get('noiseType');
+      if (!loc || !type) return alert('Please answer all questions.');
+
+      if (type === 'grinding' && loc === 'front')
+        return showResult('critical','Brake Pads Worn','🛑','Metal-on-metal grinding at front brakes',
+          'Brake pads fully worn, warped rotors',
+          'Replace brake pads and inspect / resurface rotors immediately.',
+          '7 000 – 22 000');
+
+      if (type === 'knocking' && loc === 'engine')
+        return showResult('critical','Engine Knock','🔨','Rod bearing knock or low oil pressure',
+          'Worn bearings, low oil level, incorrect oil grade',
+          'Check oil level immediately. Top up or change oil. If knock persists, inspect bearings.',
+          '15 000 – 120 000');
+
+      if (type === 'squealing' && loc === 'front')
+        return showResult('warning','Brake Wear Indicator','📢','Brake wear sensors squealing',
+          'Pads near end of life, glazed rotors',
+          'Inspect brake pads. Replace before grinding begins.',
+          '5 000 – 18 000');
+
+      if (type === 'grinding' && loc === 'rear')
+        return showResult('critical','Rear Brake Issue','🛑','Rear brake drums or pads worn out',
+          'Worn rear brake shoes, dirty drum',
+          'Inspect rear drum brakes. Clean, adjust, or replace as needed.',
+          '6 000 – 16 000');
+
+      return showResult('warning','Suspension Noise','🔩','Worn suspension or steering components',
+        'Worn ball joints, tie rod ends, sway bar links',
+        'Have a mechanic inspect suspension. Replace worn linkages.',
+        '8 000 – 30 000');
+    }
+
+    if (problem === 'smoke') {
+      const color = get('smokeColor'), smell = get('smell');
+      if (!color || !smell) return alert('Please answer all questions.');
+
+      if (color === 'white' && smell === 'yes')
+        return showResult('critical','Head Gasket Leak','💨','Coolant burning in combustion chamber',
+          'Blown head gasket allowing coolant into cylinders',
+          'Stop driving immediately. Pressure-test cooling system. Replace head gasket.',
+          '35 000 – 90 000');
+
+      if (color === 'white' && smell === 'no')
+        return showResult('warning','Condensation','🌫️','Normal water vapour on cold starts',
+          'Cold engine burning off condensation — usually harmless',
+          'Monitor. If smoke persists after warm-up, inspect coolant levels.',
+          '0 – 2 000');
+
+      if (color === 'blue')
+        return showResult('critical','Oil Burning','🔵','Engine burning engine oil',
+          'Worn piston rings, valve seals, or PCV system failure',
+          'Check oil consumption. Replace valve stem seals or piston rings.',
+          '20 000 – 80 000');
+
+      if (color === 'black')
+        return showResult('critical','Rich Fuel Mixture','🖤','Excess fuel not burning completely',
+          'Faulty injector, O2 sensor, dirty air filter, stuck choke',
+          'Replace air filter. Run OBD-II scan for fuel trim codes. Inspect injectors.',
+          '5 000 – 30 000');
+    }
+  }
+
+  function reset() {
+    document.getElementById('mainProblem').value = '';
+    document.getElementById('questions').classList.remove('visible');
+    document.getElementById('result').classList.remove('visible');
+    document.getElementById('reset').classList.remove('visible');
+    document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+    document.querySelectorAll('.q-section').forEach(s => s.style.display = 'none');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>

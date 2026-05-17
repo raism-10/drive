@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>فاحص مشاكل السيارة | Vérificateur Auto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0f13;
+      --panel: #16181f;
+      --border: #2a2d38;
+      --accent: #e8432d;
+      --accent2: #f5a623;
+      --text: #e8e9ef;
+      --muted: #676b7e;
+      --success: #2de88e;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 60px;
+      background-image:
+        radial-gradient(ellipse 80% 40% at 50% -10%, rgba(232,67,45,0.12) 0%, transparent 70%),
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.02) 40px);
+    }
+
+    body.ar { font-family: 'Cairo', sans-serif; direction: rtl; }
+    body.ar select {
+      background-position: left 16px center;
+      padding: 13px 16px 13px 44px;
+    }
+
+    /* ── Lang switcher ── */
+    .lang-switcher {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 28px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 5px;
+      border-radius: 30px;
+    }
+    .lang-btn {
+      padding: 7px 24px;
+      border-radius: 22px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all .2s;
+      font-family: inherit;
+    }
+    .lang-btn.active { background: var(--accent); color: #fff; }
+
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 40px; }
+    .badge {
+      display: inline-block;
+      background: rgba(232,67,45,0.15);
+      border: 1px solid rgba(232,67,45,0.4);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    body.ar .badge { letter-spacing: 0; font-size: 13px; }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(48px, 9vw, 82px);
+      letter-spacing: 3px;
+      line-height: 1;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    body.ar h1 { font-family: 'Cairo', sans-serif; font-weight: 700; letter-spacing: 0; font-size: clamp(38px, 8vw, 68px); }
+    header p { color: var(--muted); margin-top: 10px; font-size: 15px; font-weight: 300; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      width: 100%;
+      max-width: 640px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+
+    /* ── Labels ── */
+    label.field-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    body.ar label.field-label { letter-spacing: 0; font-size: 12px; }
+
+    select, .radio-group { width: 100%; margin-bottom: 20px; }
+    select {
+      appearance: none;
+      background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23676b7e' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 16px center;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 15px;
+      padding: 13px 44px 13px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color .2s;
+      width: 100%;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+    select option { background: #1a1c24; }
+
+    /* ── Radio buttons ── */
+    .radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .radio-group label {
+      flex: 1;
+      min-width: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: border-color .2s, background .2s;
+      user-select: none;
+      text-align: center;
+    }
+    .radio-group input[type=radio] { display: none; }
+    .radio-group label:has(input:checked) {
+      border-color: var(--accent);
+      background: rgba(232,67,45,0.1);
+    }
+    .radio-group label span { pointer-events: none; }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0 24px; }
+
+    /* ── Questions ── */
+    #questions { display: none; }
+    #questions.visible { display: block; animation: fadeIn .35s ease; }
+
+    /* ── Diagnose Button ── */
+    button#diagnose {
+      width: 100%;
+      padding: 15px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: opacity .2s, transform .1s;
+    }
+    button#diagnose:hover { opacity: .88; }
+    button#diagnose:active { transform: scale(.98); }
+
+    /* ── Result ── */
+    #result { display: none; margin-top: 28px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; animation: slideUp .4s ease; }
+    #result.visible { display: block; }
+
+    .result-header {
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    body.ar .result-header { letter-spacing: 0; font-size: 14px; }
+    .result-header.critical { background: rgba(232,67,45,0.2); color: var(--accent); border-bottom: 1px solid rgba(232,67,45,0.3); }
+    .result-header.warning  { background: rgba(245,166,35,0.15); color: var(--accent2); border-bottom: 1px solid rgba(245,166,35,0.3); }
+
+    .result-body { padding: 20px; background: rgba(0,0,0,0.25); }
+    .result-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 6px 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-row .rk { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); padding-top: 2px; }
+    body.ar .result-row .rk { letter-spacing: 0; font-size: 12px; }
+    .result-row .rv { color: var(--text); }
+    .cost-pill {
+      display: inline-block;
+      background: rgba(46,232,142,0.12);
+      border: 1px solid rgba(46,232,142,0.3);
+      color: var(--success);
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* ── Reset ── */
+    button#reset {
+      display: none;
+      width: 100%;
+      margin-top: 14px;
+      padding: 12px;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      transition: color .2s, border-color .2s;
+    }
+    button#reset:hover { color: var(--text); border-color: var(--muted); }
+    button#reset.visible { display: block; }
+
+    @keyframes fadeIn  { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+    footer { margin-top: 40px; font-size: 12px; color: var(--muted); text-align: center; max-width: 640px; }
+  </style>
+</head>
+<body class="fr">
+
+<!-- Language Switcher -->
+<div class="lang-switcher">
+  <button class="lang-btn" onclick="setLang('ar')">العربية</button>
+  <button class="lang-btn active" onclick="setLang('fr')">Français</button>
+</div>
+
+<header>
+  <div class="badge" id="badge">🔧 Outil de Diagnostic</div>
+  <h1 id="title">Vérificateur<br>Auto</h1>
+  <p id="subtitle">Répondez à quelques questions — obtenez un diagnostic instantané.</p>
+</header>
+
+<div class="card">
+
+  <label class="field-label" id="lbl-main">Sélectionnez votre problème principal</label>
+  <select id="mainProblem" onchange="showQuestions()">
+    <option value="" id="opt-default">— Choisissez un symptôme —</option>
+    <option value="wontStart"    id="opt-wontStart">La voiture ne démarre pas</option>
+    <option value="overheating"  id="opt-overheating">Surchauffe du moteur</option>
+    <option value="strangeNoise" id="opt-noise">Bruit bizarre</option>
+    <option value="smoke"        id="opt-smoke">Fumée du pot d'échappement</option>
+  </select>
+
+  <div id="questions">
+    <hr class="divider"/>
+
+    <!-- Won't start -->
+    <div id="q-wontStart" class="q-section" style="display:none">
+      <label class="field-label" id="lbl-clicking">Y a-t-il un bruit de cliquetis en tournant la clé ?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="clicking" value="yes"><span id="r-clicking-yes">✅ Oui</span></label>
+        <label><input type="radio" name="clicking" value="no"><span id="r-clicking-no">❌ Non</span></label>
+      </div>
+      <label class="field-label" id="lbl-lights">Les voyants du tableau de bord sont-ils allumés ?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="lights" value="yes"><span id="r-lights-yes">✅ Oui</span></label>
+        <label><input type="radio" name="lights" value="no"><span id="r-lights-no">❌ Non</span></label>
+      </div>
+      <label class="field-label" id="lbl-fuel">Y a-t-il du carburant dans le réservoir ?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="fuel" value="yes"><span id="r-fuel-yes">✅ Oui</span></label>
+        <label><input type="radio" name="fuel" value="no"><span id="r-fuel-no">❌ Non</span></label>
+      </div>
+    </div>
+
+    <!-- Overheating -->
+    <div id="q-overheating" class="q-section" style="display:none">
+      <label class="field-label" id="lbl-coolant">Le niveau du liquide de refroidissement est-il bas ?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="coolant" value="yes"><span id="r-coolant-yes">✅ Oui</span></label>
+        <label><input type="radio" name="coolant" value="no"><span id="r-coolant-no">❌ Non</span></label>
+      </div>
+      <label class="field-label" id="lbl-leak">Y a-t-il une fuite sous la voiture ?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="leak" value="yes"><span id="r-leak-yes">✅ Oui</span></label>
+        <label><input type="radio" name="leak" value="no"><span id="r-leak-no">❌ Non</span></label>
+      </div>
+      <label class="field-label" id="lbl-fan">Le ventilateur de refroidissement fonctionne-t-il ?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="fan" value="yes"><span id="r-fan-yes">✅ Oui</span></label>
+        <label><input type="radio" name="fan" value="no"><span id="r-fan-no">❌ Non</span></label>
+      </div>
+    </div>
+
+    <!-- Strange Noise -->
+    <div id="q-strangeNoise" class="q-section" style="display:none">
+      <label class="field-label" id="lbl-noiseLoc">D'où vient le bruit ?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="noiseLocation" value="front"><span id="r-front">🔊 Avant</span></label>
+        <label><input type="radio" name="noiseLocation" value="rear"><span id="r-rear">🔊 Arrière</span></label>
+        <label><input type="radio" name="noiseLocation" value="engine"><span id="r-engine">🔊 Moteur</span></label>
+      </div>
+      <label class="field-label" id="lbl-noiseType">Quel type de bruit ?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="noiseType" value="grinding"><span id="r-grinding">⚙️ Grincement</span></label>
+        <label><input type="radio" name="noiseType" value="knocking"><span id="r-knocking">🔨 Cognement</span></label>
+        <label><input type="radio" name="noiseType" value="squealing"><span id="r-squealing">📢 Couinement</span></label>
+      </div>
+    </div>
+
+    <!-- Smoke -->
+    <div id="q-smoke" class="q-section" style="display:none">
+      <label class="field-label" id="lbl-smokeColor">Quelle est la couleur de la fumée ?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="smokeColor" value="white"><span id="r-white">🌫️ Blanche</span></label>
+        <label><input type="radio" name="smokeColor" value="blue"><span id="r-blue">💨 Bleue</span></label>
+        <label><input type="radio" name="smokeColor" value="black"><span id="r-black">🖤 Noire</span></label>
+      </div>
+      <label class="field-label" id="lbl-smell">Y a-t-il une odeur de brûlé ?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="smell" value="yes"><span id="r-smell-yes">✅ Oui</span></label>
+        <label><input type="radio" name="smell" value="no"><span id="r-smell-no">❌ Non</span></label>
+      </div>
+    </div>
+
+    <button id="diagnose" onclick="diagnose()">⚡ Lancer le diagnostic</button>
+  </div>
+
+  <div id="result"></div>
+  <button id="reset" onclick="doReset()">↺ Recommencer</button>
+</div>
+
+<footer id="footer">🚗 À titre indicatif uniquement — consultez toujours un mécanicien certifié.</footer>
+
+<script>
+const T = {
+  fr: {
+    badge: '🔧 Outil de Diagnostic',
+    title: 'Vérificateur<br>Auto',
+    subtitle: 'Répondez à quelques questions — obtenez un diagnostic instantané.',
+    'lbl-main': 'Sélectionnez votre problème principal',
+    'opt-default': '— Choisissez un symptôme —',
+    'opt-wontStart': 'La voiture ne démarre pas',
+    'opt-overheating': 'Surchauffe du moteur',
+    'opt-noise': 'Bruit bizarre',
+    'opt-smoke': "Fumée du pot d'échappement",
+    'lbl-clicking': 'Y a-t-il un bruit de cliquetis en tournant la clé ?',
+    'r-clicking-yes': '✅ Oui', 'r-clicking-no': '❌ Non',
+    'lbl-lights': 'Les voyants du tableau de bord sont-ils allumés ?',
+    'r-lights-yes': '✅ Oui', 'r-lights-no': '❌ Non',
+    'lbl-fuel': 'Y a-t-il du carburant dans le réservoir ?',
+    'r-fuel-yes': '✅ Oui', 'r-fuel-no': '❌ Non',
+    'lbl-coolant': 'Le niveau du liquide de refroidissement est-il bas ?',
+    'r-coolant-yes': '✅ Oui', 'r-coolant-no': '❌ Non',
+    'lbl-leak': 'Y a-t-il une fuite sous la voiture ?',
+    'r-leak-yes': '✅ Oui', 'r-leak-no': '❌ Non',
+    'lbl-fan': 'Le ventilateur de refroidissement fonctionne-t-il ?',
+    'r-fan-yes': '✅ Oui', 'r-fan-no': '❌ Non',
+    'lbl-noiseLoc': "D'où vient le bruit ?",
+    'r-front': '🔊 Avant', 'r-rear': '🔊 Arrière', 'r-engine': '🔊 Moteur',
+    'lbl-noiseType': 'Quel type de bruit ?',
+    'r-grinding': '⚙️ Grincement', 'r-knocking': '🔨 Cognement', 'r-squealing': '📢 Couinement',
+    'lbl-smokeColor': 'Quelle est la couleur de la fumée ?',
+    'r-white': '🌫️ Blanche', 'r-blue': '💨 Bleue', 'r-black': '🖤 Noire',
+    'lbl-smell': "Y a-t-il une odeur de brûlé ?",
+    'r-smell-yes': '✅ Oui', 'r-smell-no': '❌ Non',
+    diagnoseBtn: '⚡ Lancer le diagnostic',
+    resetBtn: '↺ Recommencer',
+    footer: '🚗 À titre indicatif uniquement — consultez toujours un mécanicien certifié.',
+    alertMsg: 'Veuillez répondre à toutes les questions.',
+    rk: { diag: 'Diagnostic', causes: 'Causes possibles', solution: 'Solution', cost: 'Coût estimé' },
+    results: {
+      batteryDead:   { sev:'critical', title:'Batterie déchargée',     icon:'🔋', prob:'Batterie morte ou déchargée', causes:'Bornes corrodées, vieille batterie, alternateur défaillant', sol:"Recharger ou remplacer la batterie. Vérifier la sortie de l'alternateur.", cost:'3 500 – 12 000' },
+      starterFault:  { sev:'critical', title:'Défaut du démarreur',    icon:'⚡', prob:'Démarreur ou solénoïde défaillant', causes:'Charbons usés, solénoïde grillé, mauvaise mise à la masse', sol:'Tester le démarreur. Remplacer le solénoïde ou le démarreur complet.', cost:'8 000 – 25 000' },
+      ignitionFault: { sev:'critical', title:"Problème d'allumage",    icon:'🔑', prob:'Pas de démarrage — relais ou contacteur', causes:'Contacteur défectueux, fusible grillé, mauvais relais', sol:'Vérifier le boîtier à fusibles, tester le relais, inspecter le câblage.', cost:'5 000 – 18 000' },
+      emptyTank:     { sev:'warning',  title:'Réservoir vide',         icon:'⛽', prob:'Pas de carburant dans le réservoir', causes:'Réservoir à sec, jauge de carburant défectueuse', sol:'Ajouter au moins 5 L de carburant. Vérifier la jauge.', cost:'500 – 3 000' },
+      unknownStart:  { sev:'warning',  title:'Panne inconnue',         icon:'❓', prob:'Causes multiples possibles', causes:'Antidémarrage, panne ECU, pompe à carburant, bougies', sol:'Scanner OBD-II. Vérifier la pression de la pompe et les bougies.', cost:'10 000 – 45 000' },
+      coolantLeak:   { sev:'critical', title:'Fuite de liquide',       icon:'💧', prob:'Niveau de liquide bas — fuite dans le circuit', causes:'Durite fissurée, radiateur percé, joint de culasse', sol:'Localiser et réparer la fuite. Remplir le liquide. Faire un test de pression.', cost:'6 000 – 35 000' },
+      thermostat:    { sev:'critical', title:'Thermostat défaillant',  icon:'🌡️', prob:'Thermostat bloqué en position fermée', causes:"Vieux thermostat ne s'ouvrant pas pour laisser passer le liquide", sol:'Remplacer le thermostat. Rincer et remplir le circuit de refroidissement.', cost:'4 000 – 10 000' },
+      fanFault:      { sev:'critical', title:'Ventilateur en panne',   icon:'🌀', prob:'Ventilateur électrique non alimenté', causes:'Fusible grillé, moteur de ventilateur défectueux, sonde de température', sol:'Vérifier le fusible du ventilateur. Tester le moteur. Remplacer si nécessaire.', cost:'5 000 – 20 000' },
+      radiatorBlock: { sev:'warning',  title:'Radiateur bouché',       icon:'♨️', prob:'Circulation de liquide restreinte', causes:'Dépôts de calcaire, débris, radiateur partiellement obstrué', sol:'Rincer le radiateur. Envisager un entretien complet du circuit.', cost:'4 000 – 15 000' },
+      brakePads:     { sev:'critical', title:'Plaquettes usées',       icon:'🛑', prob:'Métal contre métal aux freins avant', causes:'Plaquettes totalement usées, disques voilés', sol:'Remplacer les plaquettes et inspecter / rectifier les disques immédiatement.', cost:'7 000 – 22 000' },
+      engineKnock:   { sev:'critical', title:'Cognement moteur',       icon:'🔨', prob:"Cognement de bielle ou pression d'huile faible", causes:"Coussinets usés, faible niveau d'huile, mauvaise viscosité", sol:"Vérifier le niveau d'huile immédiatement. Changer l'huile. Si le cognement persiste, inspecter les coussinets.", cost:'15 000 – 120 000' },
+      brakeWear:     { sev:'warning',  title:"Témoin d'usure freins",  icon:'📢', prob:"Indicateurs d'usure de freins actifs", causes:'Plaquettes en fin de vie, disques vernis', sol:'Inspecter les plaquettes. Les remplacer avant que le grincement commence.', cost:'5 000 – 18 000' },
+      rearBrake:     { sev:'critical', title:'Frein arrière usé',      icon:'🛑', prob:'Tambours ou garnitures arrière usés', causes:'Garnitures arrière usées, tambour sale', sol:'Inspecter les freins à tambour. Nettoyer, régler ou remplacer si nécessaire.', cost:'6 000 – 16 000' },
+      suspension:    { sev:'warning',  title:'Bruit de suspension',    icon:'🔩', prob:'Composants de suspension ou direction usés', causes:'Rotules usées, biellettes de direction, barres stabilisatrices', sol:'Faire inspecter la suspension par un mécanicien. Remplacer les pièces usées.', cost:'8 000 – 30 000' },
+      headGasket:    { sev:'critical', title:'Joint de culasse grillé', icon:'💨', prob:'Liquide de refroidissement brûlant dans la chambre de combustion', causes:'Joint de culasse soufflé laissant entrer le liquide', sol:'Arrêter de conduire immédiatement. Tester la pression. Remplacer le joint.', cost:'35 000 – 90 000' },
+      condensation:  { sev:'warning',  title:'Condensation normale',   icon:'🌫️', prob:'Vapeur eau normale au démarrage à froid', causes:'Moteur froid brûlant la condensation — généralement sans danger', sol:'Surveiller. Si la fumée persiste après le chauffage, inspecter le liquide.', cost:'0 – 2 000' },
+      oilBurning:    { sev:'critical', title:"Huile qui brûle",        icon:'🔵', prob:"Moteur brûlant de l'huile moteur", causes:'Segments de piston usés, joints de soupapes, système PCV défaillant', sol:'Contrôler la consommation huile. Remplacer les joints ou les segments.', cost:'20 000 – 80 000' },
+      richMix:       { sev:'critical', title:'Mélange trop riche',     icon:'🖤', prob:'Excès de carburant non brûlé', causes:'Injecteur défectueux, sonde O2, filtre à air encrassé', sol:'Remplacer le filtre à air. Scanner OBD-II. Inspecter les injecteurs.', cost:'5 000 – 30 000' },
+    }
+  },
+  ar: {
+    badge: '🔧 أداة التشخيص',
+    title: 'فاحص<br>مشاكل السيارة',
+    subtitle: 'أجب على بعض الأسئلة — احصل على تشخيص فوري.',
+    'lbl-main': 'اختر المشكلة الرئيسية',
+    'opt-default': '— اختر عرضًا —',
+    'opt-wontStart': 'السيارة لا تعمل',
+    'opt-overheating': 'ارتفاع حرارة المحرك',
+    'opt-noise': 'صوت غريب',
+    'opt-smoke': 'دخان من العادم',
+    'lbl-clicking': 'هل يوجد صوت نقر عند تشغيل المفتاح؟',
+    'r-clicking-yes': '✅ نعم', 'r-clicking-no': '❌ لا',
+    'lbl-lights': 'هل أضواء لوحة القيادة مضاءة؟',
+    'r-lights-yes': '✅ نعم', 'r-lights-no': '❌ لا',
+    'lbl-fuel': 'هل يوجد وقود في الخزان؟',
+    'r-fuel-yes': '✅ نعم', 'r-fuel-no': '❌ لا',
+    'lbl-coolant': 'هل مستوى سائل التبريد منخفض؟',
+    'r-coolant-yes': '✅ نعم', 'r-coolant-no': '❌ لا',
+    'lbl-leak': 'هل يوجد تسرب تحت السيارة؟',
+    'r-leak-yes': '✅ نعم', 'r-leak-no': '❌ لا',
+    'lbl-fan': 'هل مروحة التبريد تعمل؟',
+    'r-fan-yes': '✅ نعم', 'r-fan-no': '❌ لا',
+    'lbl-noiseLoc': 'من أين يأتي الصوت؟',
+    'r-front': '🔊 الأمام', 'r-rear': '🔊 الخلف', 'r-engine': '🔊 المحرك',
+    'lbl-noiseType': 'ما نوع الصوت؟',
+    'r-grinding': '⚙️ صرير', 'r-knocking': '🔨 طرق', 'r-squealing': '📢 صياح',
+    'lbl-smokeColor': 'ما لون الدخان؟',
+    'r-white': '🌫️ أبيض', 'r-blue': '💨 أزرق', 'r-black': '🖤 أسود',
+    'lbl-smell': 'هل هناك رائحة احتراق؟',
+    'r-smell-yes': '✅ نعم', 'r-smell-no': '❌ لا',
+    diagnoseBtn: '⚡ ابدأ التشخيص',
+    resetBtn: '↺ ابدأ من جديد',
+    footer: '🚗 للاسترشاد فقط — استشر دائمًا ميكانيكيًا متخصصًا.',
+    alertMsg: 'يرجى الإجابة على جميع الأسئلة.',
+    rk: { diag: 'التشخيص', causes: 'الأسباب المحتملة', solution: 'الحل', cost: 'تكلفة الإصلاح' },
+    results: {
+      batteryDead:   { sev:'critical', title:'البطارية فارغة',        icon:'🔋', prob:'بطارية ميتة أو مفرغة', causes:'أطراف متآكلة، بطارية قديمة، الدينامو لا يشحن', sol:'اشحن البطارية أو استبدلها. تحقق من إخراج الدينامو.', cost:'3 500 – 12 000' },
+      starterFault:  { sev:'critical', title:'عطل في المارش',         icon:'⚡', prob:'مارش ضعيف أو سولينويد تالف', causes:'فرش بالية، سولينويد محروق، أرضي ضعيف', sol:'اختبر المارش. استبدل السولينويد أو المارش كاملًا.', cost:'8 000 – 25 000' },
+      ignitionFault: { sev:'critical', title:'مشكلة في الإشعال',      icon:'🔑', prob:'لا يدور — ريلاي أو كونتاكتور', causes:'كونتاكتور معطوب، فيوز محترق، ريلاي سيئ', sol:'تفقد صندوق الفيوزات، اختبر الريلاي، افحص أسلاك الإشعال.', cost:'5 000 – 18 000' },
+      emptyTank:     { sev:'warning',  title:'الخزان فارغ',           icon:'⛽', prob:'لا يوجد وقود في الخزان', causes:'نفد الوقود، عطل في مقياس الوقود', sol:'أضف على الأقل 5 لترات. تحقق من معايرة المقياس.', cost:'500 – 3 000' },
+      unknownStart:  { sev:'warning',  title:'عطل غير معروف',         icon:'❓', prob:'أسباب متعددة محتملة', causes:'نظام إيموبيلايزر، عطل ECU، مضخة الوقود، الشمعات', sol:'افحص بجهاز OBD-II. تحقق من ضغط مضخة الوقود والشمعات.', cost:'10 000 – 45 000' },
+      coolantLeak:   { sev:'critical', title:'تسرب سائل التبريد',     icon:'💧', prob:'مستوى سائل منخفض بسبب تسرب', causes:'خرطوم متشقق، ثقب في الرديتور، طوق الرأس', sol:'حدد مصدر التسرب وأصلحه. أعد ملء السائل واختبر الضغط.', cost:'6 000 – 35 000' },
+      thermostat:    { sev:'critical', title:'عطل الثرموستات',        icon:'🌡️', prob:'الثرموستات عالق في وضع الإغلاق', causes:'ثرموستات قديم لا يفتح لتمرير السائل', sol:'استبدل الثرموستات. اشطف دائرة التبريد وأعد ملءها.', cost:'4 000 – 10 000' },
+      fanFault:      { sev:'critical', title:'عطل في مروحة التبريد',  icon:'🌀', prob:'المروحة الكهربائية لا تعمل', causes:'فيوز محترق، موتور مروحة تالف، سنسور درجة الحرارة', sol:'تحقق من فيوز المروحة. اختبر الموتور مباشرة. استبدل ما يلزم.', cost:'5 000 – 20 000' },
+      radiatorBlock: { sev:'warning',  title:'انسداد الرديتور',       icon:'♨️', prob:'تدفق سائل مقيد عبر الرديتور', causes:'ترسبات كلسية، حطام، رديتور مسدود جزئيًا', sol:'اشطف الرديتور. فكّر في صيانة كاملة لدائرة التبريد.', cost:'4 000 – 15 000' },
+      brakePads:     { sev:'critical', title:'تآكل الفرامل الأمامية', icon:'🛑', prob:'احتكاك معدن بمعدن في الفرامل الأمامية', causes:'تيل الفرامل بالي بالكامل، قرص مشوه', sol:'استبدل تيل الفرامل وافحص الأقراص فورًا.', cost:'7 000 – 22 000' },
+      engineKnock:   { sev:'critical', title:'دق في المحرك',           icon:'🔨', prob:'دق في الكرسال أو ضغط زيت منخفض', causes:'رمانات بالية، مستوى زيت منخفض، نوع زيت خاطئ', sol:'تحقق من مستوى الزيت فورًا. غيّره. إذا استمر الدق، افحص الرمانات.', cost:'15 000 – 120 000' },
+      brakeWear:     { sev:'warning',  title:'مؤشر تآكل الفرامل',     icon:'📢', prob:'مستشعرات تآكل الفرامل изда звук', causes:'التيل قرب نهاية العمر الافتراضي، أقراص مزججة', sol:'افحص التيل. استبدله قبل أن يبدأ الصرير.', cost:'5 000 – 18 000' },
+      rearBrake:     { sev:'critical', title:'مشكلة الفرامل الخلفية', icon:'🛑', prob:'طبول أو تيل خلفي بالٍ', causes:'تيل خلفي بالٍ، طبل متسخ', sol:'افحص فرامل الطبل الخلفية. نظّف أو اضبط أو استبدل.', cost:'6 000 – 16 000' },
+      suspension:    { sev:'warning',  title:'صوت تعليق',             icon:'🔩', prob:'مكونات تعليق أو توجيه بالية', causes:'كرات قيادة بالية، رودات، مثبطات استقرار', sol:'اطلب من الميكانيكي فحص التعليق. استبدل القطع البالية.', cost:'8 000 – 30 000' },
+      headGasket:    { sev:'critical', title:'طوق الرأس محترق',       icon:'💨', prob:'سائل التبريد يحترق في غرفة الاحتراق', causes:'طوق رأس محترق يسمح لسائل التبريد بالدخول', sol:'أوقف السيارة فورًا. اختبر الضغط. استبدل طوق الرأس.', cost:'35 000 – 90 000' },
+      condensation:  { sev:'warning',  title:'بخار ماء طبيعي',        icon:'🌫️', prob:'بخار ماء عادي عند بدء تشغيل المحرك البارد', causes:'المحرك البارد يحرق التكاثف — عادةً غير ضار', sol:'راقب الوضع. إذا استمر الدخان بعد الاحماء، افحص السائل.', cost:'0 – 2 000' },
+      oilBurning:    { sev:'critical', title:'احتراق الزيت',           icon:'🔵', prob:'المحرك يحرق زيت المحرك', causes:'حلقات مكبس بالية، شيلمانات صمامات، عطل نظام PCV', sol:'راقب استهلاك الزيت. استبدل الشيلمانات أو حلقات المكبس.', cost:'20 000 – 80 000' },
+      richMix:       { sev:'critical', title:'خليط وقود ثقيل',         icon:'🖤', prob:'كمية وقود زائدة لا تحترق بالكامل', causes:'مشخاخ معطوب، سنسور O2، فلتر هواء متسخ', sol:'استبدل فلتر الهواء. افحص بـ OBD-II. افحص المشاخيخ.', cost:'5 000 – 30 000' },
+    }
+  }
+};
+
+let lang = 'fr';
+
+function setLang(l) {
+  lang = l;
+  document.body.className = l;
+  document.documentElement.lang = l;
+  document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === (l === 'ar' ? 'العربية' : 'Français'));
+  });
+  const t = T[l];
+  ['badge','title','subtitle','footer'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = t[id];
+  });
+  Object.keys(t).forEach(k => {
+    if (k.startsWith('lbl-') || k.startsWith('r-') || k.startsWith('opt-')) {
+      const el = document.getElementById(k);
+      if (el) el.innerHTML = t[k];
+    }
+  });
+  document.getElementById('diagnose').textContent = t.diagnoseBtn;
+  document.getElementById('reset').textContent    = t.resetBtn;
+  document.getElementById('result').classList.remove('visible');
+  document.getElementById('reset').classList.remove('visible');
+}
+
+function showQuestions() {
+  const val = document.getElementById('mainProblem').value;
+  const qDiv = document.getElementById('questions');
+  document.querySelectorAll('.q-section').forEach(s => s.style.display = 'none');
+  document.getElementById('result').classList.remove('visible');
+  document.getElementById('reset').classList.remove('visible');
+  document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+  if (!val) { qDiv.classList.remove('visible'); return; }
+  qDiv.classList.add('visible');
+  const sec = document.getElementById('q-' + val);
+  if (sec) sec.style.display = 'block';
+}
+
+function get(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
+
+function showResult(key) {
+  const t = T[lang];
+  const r = t.results[key];
+  const res = document.getElementById('result');
+  res.innerHTML = `
+    <div class="result-header ${r.sev}">${r.icon} ${r.title}</div>
+    <div class="result-body">
+      <div class="result-row"><div class="rk">${t.rk.diag}</div><div class="rv">${r.prob}</div></div>
+      <div class="result-row"><div class="rk">${t.rk.causes}</div><div class="rv">${r.causes}</div></div>
+      <div class="result-row"><div class="rk">${t.rk.solution}</div><div class="rv">${r.sol}</div></div>
+      <div class="result-row"><div class="rk">${t.rk.cost}</div><div class="rv"><span class="cost-pill">${r.cost} DZD</span></div></div>
+    </div>`;
+  res.classList.add('visible');
+  document.getElementById('reset').classList.add('visible');
+  res.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function diagnose() {
+  const t = T[lang];
+  const problem = document.getElementById('mainProblem').value;
+
+  if (problem === 'wontStart') {
+    const clicking = get('clicking'), lights = get('lights'), fuel = get('fuel');
+    if (!clicking || !lights || !fuel) return alert(t.alertMsg);
+    if (clicking === 'yes' && lights === 'no')  return showResult('batteryDead');
+    if (clicking === 'yes' && lights === 'yes') return showResult('starterFault');
+    if (clicking === 'no' && lights === 'yes' && fuel === 'yes') return showResult('ignitionFault');
+    if (fuel === 'no') return showResult('emptyTank');
+    return showResult('unknownStart');
+  }
+
+  if (problem === 'overheating') {
+    const coolant = get('coolant'), leak = get('leak'), fan = get('fan');
+    if (!coolant || !leak || !fan) return alert(t.alertMsg);
+    if (coolant === 'yes' && leak === 'yes') return showResult('coolantLeak');
+    if (coolant === 'yes' && leak === 'no')  return showResult('thermostat');
+    if (fan === 'no') return showResult('fanFault');
+    return showResult('radiatorBlock');
+  }
+
+  if (problem === 'strangeNoise') {
+    const loc = get('noiseLocation'), type = get('noiseType');
+    if (!loc || !type) return alert(t.alertMsg);
+    if (type === 'grinding'  && loc === 'front')  return showResult('brakePads');
+    if (type === 'knocking'  && loc === 'engine') return showResult('engineKnock');
+    if (type === 'squealing' && loc === 'front')  return showResult('brakeWear');
+    if (type === 'grinding'  && loc === 'rear')   return showResult('rearBrake');
+    return showResult('suspension');
+  }
+
+  if (problem === 'smoke') {
+    const color = get('smokeColor'), smell = get('smell');
+    if (!color || !smell) return alert(t.alertMsg);
+    if (color === 'white' && smell === 'yes') return showResult('headGasket');
+    if (color === 'white' && smell === 'no')  return showResult('condensation');
+    if (color === 'blue')  return showResult('oilBurning');
+    if (color === 'black') return showResult('richMix');
+  }
+}
+
+function doReset() {
+  document.getElementById('mainProblem').value = '';
+  document.getElementById('questions').classList.remove('visible');
+  document.getElementById('result').classList.remove('visible');
+  document.getElementById('reset').classList.remove('visible');
+  document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+  document.querySelectorAll('.q-section').forEach(s => s.style.display = 'none');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
